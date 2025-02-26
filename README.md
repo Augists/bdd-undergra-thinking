@@ -32,6 +32,15 @@ The mkcount of constructing 1000 IPs  forward and reverse. Total run time is rou
 
 ## Why
 
+#### #1 Create
+Encoding the IP address can be done in two ways: one where the highest bit of the IP is x0 and the lowest bit is x31, and another where the highest bit is x31 and the lowest bit is x0. During assembly, there is not much difference between these two encoding methods, and the shape and structure of the BDD (Binary Decision Diagram) remain largely the same. Therefore, the difference in overhead is not reflected at this stage.
+
+Some IP addresses are 16 bits, while others are 32 bits. If the IP address is only 16 bits, when encoding in the forward direction, the indices x16 to x32 do not correspond to any values in the IP address, and x15 will directly point to the terminal. In the apply function, the BDD is constructed starting from the highest-priority bit, and the two BDDs are recursively processed. If one BDD reaches the terminal and the final value can be computed, the recursion ends.
+
+When performing an OR operation on all IP addresses, a forward-encoded BDD will directly reach the terminal after recursing to x15. If the result is already 1 (for an OR operation, 1 OR any value is 1), the recursion will not continue. However, in reverse encoding, for a 16-bit IP address, only bits starting from x16 are valid. Therefore, when performing an OR operation between a 32-bit and a 16-bit IP address, the recursion will start from x0 for the 32-bit IP address and only become valid for the 16-bit IP address when it reaches x16. This wastes a significant amount of recursion time, leading to differences in time overhead.
+
+For more details, you can see the pdf in the supplement.
+
 #### #2 Construct
 
 When create variables in the same order, constructing the bdd in the opposite order of creating brings less mkcount. The reason is related to the  inner order of operation "and". (For both reverse and forward, the final bdd of a single IP is the same due to we have same createvar order, so the "or" opreation of different bdd for both situation should be the same, so we can just talk about "and")
