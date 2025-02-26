@@ -52,4 +52,3 @@ I didn't mention operation cache above, but the influence of it to the differenc
 ## Lib
 
 `/lib/jdd-111.jar` is a [modified version](https://github.com/Augists/jdd) of [jdd library](https://bitbucket.org/vahidi/jdd) with variable `mkCount`.
-Different order may cause `jdd` to create more BDD variables for these reason in [#Why](https://github.com/Augists/bdd-undergra-thinking#Why).
