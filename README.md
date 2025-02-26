@@ -21,24 +21,16 @@ which is a random IP address generator and will store all IPs in `src/main/resou
 
 Then run the main code in java.
 
-## Result
-
-The mkcount of constructing 1000 IPs  forward and reverse. Total run time is roughly related to mkcount but the specific value is unstable, so I just list mkcount here.
-
-|                   | create-rev | create-for |
-|:-----------------:| ---------- | ---------- |
-| **construct-rev** | 1111699    | 26146      |
-| **construct-for** | 1005654    | 121957     |
-
 ## Why
+对ip地址进行编码，两种编码方式分别为ip的最高位为x0,最低位是x31和ip的最高位是x31,最低位是x0。
+在组装时，两种编码方式不会有很大差别，BDD的形状和结构也基本一致，所以开销差异不体现在这个阶段。
+有的ip地址只有16位，有的有32位。若ip只有16位，则正着编码时，索引x16到x32不对应ip地址中的值，x15会直接指向终端。
+在apply函数中，会从优先级高的位数开始构造BDD，递归两个BDD，如果一个BDD到了终端，且能计算出最终值，则结束递归。
+在对所有ip地址进行或运算时，正着编码的BDD递归到x15后会直接到达终端，如果此时已经得到1(对于或运算，1或任何值都是1)，
+则不会继续递归。
+而反着编码时，对于16位ip，从x16位开始才有效，所以32位和16位ip地址进行或运算会先对32位的ip从x0开始递归，
+直到运行到x16，16位的ip地址才会有效参与，这浪费了很多递归的时间。所以会有时间开销上的差异。
 
-#### #2 Construct
-
-When create variables in the same order, constructing the bdd in the opposite order of creating brings less mkcount. The reason is related to the  inner order of operation "and". (For both reverse and forward, the final bdd of a single IP is the same due to we have same createvar order, so the "or" opreation of different bdd for both situation should be the same, so we can just talk about "and")
-
-The "and" operation begins with the roots of two bdds, if the vars of two roots are different, it recursively goes deeper of the one who has lower var. For the reverse case, each time the new node to be added to the bdd always has the  lowest var, so it go deeper and dirtctly get to terminal 1 and 0, then we can directly put the bdd below the new var regardless of what's exacly in the bdd. Unfortunately when in forward case, the new node always has the highest var, so each time adding a new node, the "and" operation has to recursive go through the whole bdd till it get to the end, add the node, and then recursive go back to the root. so in the forward order, it watse a lot of time going through the bdd, which is  unnecessary because we know each time the new node( or bdd) is just a node directly attach to the terminal.
-
-I didn't mention operation cache above, but the influence of it to the difference is ignorable if the IPs are random.   The two situation have their own order and the corresponding cache, each one has better performance depends on the pattern of IP data.
 
 ## Lib
 
