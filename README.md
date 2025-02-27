@@ -23,16 +23,24 @@ Then run the main code in java.
 
 ## Result
 
-The mkcount of constructing 1000 IPs  forward and reverse. Total run time is roughly related to mkcount but the specific value is unstable, so I just list mkcount here.
+The mkcount of creating variables constructing 1000 IPs  forward and reverse. Total run time is roughly related to mkcount but the specific value is unstable. For same data ,total run time differs each time, so the listed total run time is the average of 10 times.
 
-|                   | create-rev | create-for |
+| mkcount           | create-rev | create-for |
 |:-----------------:| ---------- | ---------- |
 | **construct-rev** | 1111699    | 26146      |
 | **construct-for** | 1005654    | 121957     |
 
+| total run time    | create-rev | create-for |
+|:-----------------:| ---------- | ---------- |
+| **construct-rev** | 181602000  | 9247100    |
+| **construct-for** | 151002200  | 22744400   |
+
+From the result we can see that mkcount and total run time follow the same situation: Creating variables forward is obviouly faster than reverse, and for construct, using the opposite order to create is faster.
+
 ## Why
 
 #### #1 Create
+
 Encoding the IP address can be done in two ways: one where the highest bit of the IP is x0 and the lowest bit is x31, and another where the highest bit is x31 and the lowest bit is x0. During assembly, there is not much difference between these two encoding methods, and the shape and structure of the BDD (Binary Decision Diagram) remain largely the same. Therefore, the difference in overhead is not reflected at this stage.
 
 Some IP addresses are 16 bits, while others are 32 bits. If the IP address is only 16 bits, when encoding in the forward direction, the indices x16 to x32 do not correspond to any values in the IP address, and x15 will directly point to the terminal. In the apply function, the BDD is constructed starting from the highest-priority bit, and the two BDDs are recursively processed. If one BDD reaches the terminal and the final value can be computed, the recursion ends.
